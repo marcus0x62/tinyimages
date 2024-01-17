@@ -1,0 +1,12 @@
+name = "tinyimages"
+license = "MIT"
+licenselink = "https://marcusb.org/hacks/MIT-LICENSE.txt"
+description = "Small image/gallery module for Hugo"
+homepage = "https://marcusb.org/hacks/tinyimages.html"
+tags = ["blog", "images", "gallery", "minimal"]
+features = ["responsive"]
+min_version = "0.119.0"
+
+[author]
+  name = "Marcus Butler"
+  homepage = "https://marcusb.org"
