@@ -1,7 +1,6 @@
 {{- if not (.Page.Scratch.Get "gallery-js") }}
   {{- .Page.Scratch.Set "gallery-js" 1 }}
-  <script src="/js/gallery.js"></script>
-  <link rel="stylesheet" href="/css/gallery.css"/>
+  {{- partial "gallery_preamble" }}
 {{- end }}
 {{ $gallery_counter := 1 }}
 {{- $gallery_image_counter := 1 }}
@@ -30,9 +29,11 @@
   {{- $div_style = $div_style | append (printf "float: %s;" ($div_options.float)) }}
 {{- end }}
 {{- if isset $div_options "max_width" }}
-  {{- $div_style = $div_style | append (printf "max-width: %s;" ($div_options.max_width)) }}
+  {{- $div_style = $div_style | append (printf "max-width: %s%%;" ($div_options.max_width)) }}
 {{- end }}
-  
+{{- if isset $div_options "center" }}
+  {{- $div_style = $div_style | append (printf "margin-left: auto; margin-right: auto;") }}
+{{- end }}
 <div id="gallery-{{ .Page.Scratch.Get "gallery-counter" }}" class="gallery" style="{{ range $div_style }}{{ . | safeCSS }}{{ end }}">
 {{- $formats := slice "avif" "webp" "png" "jpg" "jpeg" "tif" "tiff" }}
 {{- $i := $gallery_image_counter }}
@@ -44,6 +45,7 @@
   {{- if not $url.Scheme }}
     {{- $file := "" }}
     {{- $file_path := "" }}
+    {{- $file_base_name := "" }}
     {{- $file_name := "" }}
     {{- $file_ext := "" }}
     {{- $style := slice }}
@@ -51,6 +53,11 @@
       {{- $file = (path.Join (path.Dir $.Page.File.Path) $url.Path) }}
       {{- $file_path = path.Dir $.Page.File.Path }}
       {{- $file_name = index (strings.Split $url.Path ".") 0 }}
+      {{- $file_base_name = $file_name }}
+      {{- if strings.Contains $file_name "/" }}
+        {{- $slice := split $file_name "/" }}
+        {{- $file_base_name = (index (last 1 $slice) 0) }}
+      {{- end }}
       {{- $file_ext = index (strings.Split $url.Path ".") 1 }}
     {{- else }}
       {{- $file = $url }}
@@ -77,7 +84,6 @@
     <picture id="gallery-picture-{{ $i }}"
     {{- if eq $primary_set false }}
       class="gallery-picture-primary">
-      {{- $primary_set = true }}
     {{- else }}
       class="gallery-picture-thumbnail">
     {{- end }}
@@ -85,14 +91,14 @@
     {{- $avif := printf "%s/%s.avif" $path $file_name }}
     {{- $webp := printf "%s/%s.webp" $path $file_name }}
     {{- if fileExists $avif }}
-      <source srcset="{{ $file_name }}.avif" type="image/avif" />
+      <source srcset="{{ $file_base_name }}.avif" type="image/avif" />
     {{- end }}
     {{- if fileExists $webp }}
-      <source srcset="{{ $file_name }}.webp" type="image/webp" />
+      <source srcset="{{ $file_base_name }}.webp" type="image/webp" />
     {{- end }}
     <img
      id="gallery-image-{{ $i }}"
-     src="{{ $file }}"
+     src="{{ $file_base_name }}.{{ $file_ext }}"
      {{- if eq $i 1 }}
        class="gallery-image-primary"
      {{- else }}
@@ -101,8 +107,9 @@
      alt="{{ $alt }}"
      style="{{ range $style }}{{ . | safeCSS }}{{ end }}"
      loading="lazy"
-     {{- if eq $i 1 }}
+     {{- if eq $primary_set false }}
        onClick="zoom('gallery-image-{{ $i }}');"
+       {{- $primary_set = true }}
      {{- else }}
        onClick="replace({{ $gallery_counter }}, {{ $i }} );"
      {{- end }}

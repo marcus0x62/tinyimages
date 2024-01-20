@@ -59,3 +59,60 @@
     object-fit: scale-down;
     margin: auto;
 }
+
+.gallery-showcase-div {
+    max-width: 75%;
+}
+
+.gallery-showcase-overlay {
+    display: flex;
+    position: absolute;
+    z-index: 100;
+}
+
+.gallery-showcase-overlay-link {
+    width: 20%;
+    height: 100%;
+    font-size: 400%;
+    display: flex;
+}
+
+.gallery-showcase-overlay-link p {
+    margin: auto;
+}
+
+.gallery-showcase-overlay-spacer {
+    width: 60%;
+    height: 100%;
+}
+
+.gallery-showcase-bumper-left {
+    margin-left: auto;
+}
+
+.gallery-showcase-bumper-right {
+    margin-right: auto;
+}
+
+.gallery-showcase-select {
+    display: flex;
+    margin: auto;
+    width: 90%;
+}
+
+.gallery-showcase-dot {
+    width: 10px;
+    height: 10px;
+    padding-right: 5px;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.gallery-showcase-dot-selected {
+    width: 14px;
+    height: 14px;
+    padding-right: 5px;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+

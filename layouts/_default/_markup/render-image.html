@@ -1,7 +1,6 @@
 {{- if not (.Page.Scratch.Get "gallery-js") }}
   {{- .Page.Scratch.Set "gallery-js" 1 }}
-  <script src="/js/gallery.js"></script>
-  <link rel="stylesheet" href="/css/gallery.css" />
+  {{- partial "gallery_preamble" }}
 {{- end }}
 {{- if not (.Page.Scratch.Get "gallery-image-counter") }}
   {{- .Page.Scratch.Set "gallery-image-counter" 1 }}
@@ -16,7 +15,8 @@
   {{- $file_path := "" }}
   {{- $file_name := "" }}
   {{- $file_ext := "" }}
-  {{- $style := slice }}
+  {{- $div_style := slice }}
+  {{- $img_style := slice }}
   {{- if not (hasPrefix $url.Path "/") }}
     {{- $file = (path.Join (path.Dir .Page.File.Path) $url.Path) }}
     {{- $file_path = path.Dir .Page.File.Path }}
@@ -37,18 +37,24 @@
       {{- end }}
     {{- end  }}
   {{- end }}
+  {{- if $url.Query.Has "center" }}
+    {{- $div_style = $div_style | append "margin: auto;" }}
+  {{- end }}
   {{- if $url.Query.Has "float" }}
     {{- $float_style := printf "float: %s;" ($url.Query.Get "float") }}      
-    {{- $style = $style | append $float_style }}
+    {{- $img_style = $img_style | append $float_style }}
   {{- end }}
-  <div class="gallery-image" style="{{range $style}}{{.|safeCSS}}{{end}}">
+  {{- if $url.Query.Has "max_width" }}
+    {{- $div_style = $div_style | append (printf "max-width: %s%%;" ($url.Query.Get "max_width")) }}
+  {{- end }}
+  <div class="gallery-image" style="{{range $div_style}}{{.|safeCSS}}{{end}}">
     <picture>
       {{- if gt $image_variants 1 }}
         {{- range first (sub (len $variants) 0) $variants }}
           <source srcset="{{ . }}" />
         {{- end }}
       {{- end }}
-      <img class="gallery-image-primary" src="{{ .Destination }}" id="{{ $id }}" style="{{ range $style }}{{ . | safeCSS }}{{ end }}"
+      <img class="gallery-image-primary" src="{{ .Destination }}" id="{{ $id }}" style="{{ range $img_style }}{{ . | safeCSS }}{{ end }}"
            onClick="zoom('{{ $id }}');"/>
     </picture>
     <i>Caption: {{ .Text }}</i>
