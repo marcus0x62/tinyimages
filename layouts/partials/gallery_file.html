@@ -1,42 +1,45 @@
-{{- $alt := "" }}
 {{- $file := dict }}
 {{- $url := urls.Parse .file }}
 {{- if not $url.Scheme }}
-  {{- $file_path := "" }}
-  {{- $file_base_name := "" }}
-  {{- $file_name := "" }}
-  {{- $file_ext := "" }}
-  {{- $path := path.Dir .ctx.File.Path }}
-  {{- if not (hasPrefix $url.Path "/") }}
-    {{- if fileExists (path.Join (path.Dir .ctx.File.Path) $url.Path) }}
-      {{- $file = merge $file (dict "exists" true) }}
-      {{- $file = merge $file (dict "file" (path.Join (path.Dir .ctx.File.Path) $url.Path))}}
-      {{- $file = merge $file (dict "path" (path.Dir .ctx.File.Path)) }}
-      {{- $file = merge $file (dict "name" (index (strings.Split $url.Path ".") 0)) }}
-      {{- $file = merge $file (dict "base_name" $file.name) }}
-      {{- if strings.Contains $file.name "/" }}
-        {{- $slice := split $file.name "/" }}
-        {{- $file = merge $file (dict "base_name" (index (last 1 $slice) 0))}}
-      {{- end }}
-      {{- $file = merge $file (dict "ext" (index (strings.Split $url.Path ".") 1))}}
-      {{- $orig := printf "%s/%s.%s" $file.path $file.name $file.ext }}
-      {{- $avif := printf "%s/%s.avif" $file.path $file.name }}
-      {{- $webp := printf "%s/%s.webp" $file.path $file.name }}
-      {{- if fileExists $avif }}
-        {{- $file = merge $file (dict "avif" (printf "%s.avif" $file.base_name))}} 
-      {{- end }}
-      {{- if fileExists $webp }}
-        {{- $file = merge $file (dict "webp" (printf "%s.webp" $file.base_name))}} 
-      {{- end }}
-      {{- if fileExists $orig }}
-        {{- $file = merge $file (dict "orig" (printf "%s.%s" $file.base_name $file.ext))}} 
-      {{- end }}
-    {{- else }}
-      {{- $file = merge $file (dict "exists" false) }}
+  {{- if fileExists (path.Join (path.Dir .ctx.File.Path) $url.Path) }}
+    {{- $style := slice }}
+    {{- $file = merge $file (dict "exists" true) }}
+    {{- $file_path := (path.Dir .ctx.File.Path) }}
+    {{- $file_name := (index (strings.Split $url.Path ".") 0) }}
+    {{- $file_ext := (index (strings.Split $url.Path ".") 1) }}
+    {{- $orig := printf "%s/%s.%s" $file_path $file_name $file_ext }}
+    {{- $avif := printf "%s/%s.avif" $file_path $file_name }}
+    {{- $webp := printf "%s/%s.webp" $file_path $file_name }}
+    {{- if fileExists $avif }}
+      {{- $file = merge $file (dict "avif" (printf "%s.avif" $file_name))}} 
+    {{- end }}
+    {{- if fileExists $webp }}
+      {{- $file = merge $file (dict "webp" (printf "%s.webp" $file_name))}} 
+    {{- end }}
+    {{- if fileExists $orig }}
+      {{- $file = merge $file (dict "orig" (printf "%s.%s" $file_name $file_ext))}} 
+    {{- end }}
+    {{- if $url.Query.Has "alt" }}
+      {{- $file = merge $file (dict "alt" ($url.Query.Get "alt")) }}
+    {{- end }}
+    {{- if $url.Query.Has "center" }}
+      {{- $style = $style | append "margin: auto;" }}
+    {{- end }}
+    {{- if $url.Query.Has "max_width" }}
+      {{- $style = $style | append (printf "max-width: %s%%;" ($url.Query.Get "max_width")) }}
+    {{- end }}
+    {{- if $url.Query.Has "float" }}
+      {{- $float_style := printf "float: %s;" ($url.Query.Get "float") }}      
+      {{- $style = $style | append $float_style }}
+    {{- end }}
+    {{- if gt (len $style) 0 }}
+      {{- $file = merge $file (dict "style" $style) }}
     {{- end }}
   {{- else }}
-    {{- $file = merge $file (dict "exists" true) }}
-    {{- $file = merge $file (dict "file" $url) }}
+    {{- $file = merge $file (dict "exists" false "file" (path.Join (path.Dir .ctx.File.Path) $url.Path)) }}
   {{- end }}
+{{- else }}
+  {{- $file = merge $file (dict "exists" true) }}
+  {{- $file = merge $file (dict "file" $url) }}
 {{- end }}
 {{- return $file }}

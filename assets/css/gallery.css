@@ -4,6 +4,10 @@
     margin: 10px;
 }
 
+.gallery-caption {
+    font-style: italicize;
+}
+
 .gallery-picture-primary {
     grid-column: 1 / 5;
     grid-row: 1 / 1;
@@ -26,11 +30,12 @@
 
 .gallery-image-primary {
     max-width: 100%;
+    cursor: zoom-in;
     box-shadow: 2px 2px 10px rgb(0 0 0);
 }
 
 .gallery-image-thumbnail {
-
+    cursor: pointer;
 }
 
 .gallery-zoom {
@@ -68,6 +73,7 @@
 .gallery-grid-picture {
     margin: 10px;
     box-shadow: 2px 2px 10px rgb(0 0 0);
+    cursor: zoom-in;
 }
 
 .gallery-showcase-div {

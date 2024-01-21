@@ -4,7 +4,6 @@ let webp_re = new RegExp('.webp$');
 
 function zoom(id) {
     image = document.getElementById(id);
-    console.log("Image source: " + image.currentSrc);
 
     div = document.createElement("div");
     div.id = "zoom-div";
@@ -29,6 +28,10 @@ function zoom(id) {
 
     newimage = document.createElement("img");
     newimage.src = image.currentSrc;
+
+    newimage.addEventListener('mouseover', (event) => {
+        newimage.style.cursor = 'zoom-out';
+    });
 
     div.append(p);
     div.append(br);
@@ -217,12 +220,7 @@ function showcase_overlay(showcase_id, image_id) {
         // Remove the old elements to clear out the eventlisteners since once = true doesn't seem to work reliably...
         document.getElementById(`gallery-showcase-${showcase_id}-overlay-left-link`).remove();
         document.getElementById(`gallery-showcase-${showcase_id}-overlay-right-link`).remove();
-
-        spacer = document.getElementById(`gallery-showcase-${showcase_id}-overlay-spacer`);
-    } else {
-        spacer = document.createElement('i');
-        spacer.id = `gallery-showcase-${showcase_id}-overlay-spacer`;
-        spacer.classList.add('gallery-showcase-overlay-spacer');
+        document.getElementById(`gallery-showcase-${showcase_id}-overlay-spacer`).remove();
     }
     leftlink = document.createElement('div');
     leftlink.id = `gallery-showcase-${showcase_id}-overlay-left-link`;
@@ -230,7 +228,11 @@ function showcase_overlay(showcase_id, image_id) {
 
     leftp = document.createElement('p');
     leftlink.append(leftp);
-          
+
+    spacer = document.createElement('div');
+    spacer.id = `gallery-showcase-${showcase_id}-overlay-spacer`;
+    spacer.classList.add('gallery-showcase-overlay-spacer');
+
     rightlink = document.createElement('div');
     rightlink.id = `gallery-showcase-${showcase_id}-overlay-right-link`;
     rightlink.classList.add('gallery-showcase-overlay-link');
@@ -260,6 +262,16 @@ function showcase_overlay(showcase_id, image_id) {
         }
         return false;
     }, once = true);
+
+    spacer.addEventListener('mouseover', (event) => {
+        spacer.style.cursor = 'zoom-in';
+    });
+    spacer.addEventListener('mouseout', (event) => {
+        spacer.style.cursor = null;
+    });
+    spacer.addEventListener('mouseup', (event) => {
+        zoom(`gallery-showcase-${showcase_id}-current-image`);
+    });
 
     rightlink.addEventListener('mouseover', (event) => {
         rightlink.style.cursor = 'pointer';
