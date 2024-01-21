@@ -1,0 +1,37 @@
+{{- partial "gallery_preamble" .Page.Scratch }}
+{{- $counters := partial "gallery_get_counters.html" . }}
+{{- $gallery_counter := (index $counters 0) }}
+{{- $gallery_image_counter := (index $counters 1) }}
+{{- $div_style := partial "gallery_divoptions.html" (.Get 0) }}
+<div id="gallery-{{ $gallery_counter }}" class="gallery-grid-div" style="{{ range $div_style }}{{ . | safeCSS }}{{ end }}">
+{{- range .Params }}
+  {{- if hasPrefix . "#" }}
+    {{- continue }}
+  {{- end }}
+  {{- $style := slice }}
+  {{- $alt := "" }}
+  {{- $file := partial "gallery_file.html" (dict "file" . "ctx" $.Page) }}
+    <picture id="gallery-picture-{{ $gallery_image_counter }}"
+      class="gallery-grid-picture">
+    {{- with $file.avif }}
+      <source srcset="{{ . }}" type="image/avif" />
+    {{- end }}
+    {{- with $file.webp }}
+      <source srcset="{{ . }}" type="image/webp" />
+    {{- end }}
+    <img
+     id="gallery-image-{{ $gallery_image_counter }}"
+     src="{{ $file.orig }}"
+     class="gallery-grid-image"
+     alt="{{ $alt }}"
+     style="{{ range $style }}{{ . | safeCSS }}{{ end }}"
+     loading="lazy"
+     onClick="zoom('gallery-image-{{ $gallery_image_counter }}');"
+    />
+  </picture>
+  {{- $gallery_image_counter = add $gallery_image_counter 1 }}
+{{- end }}  
+</div>
+{{- $gallery_counter = add $gallery_counter 1 }}
+{{- partial "gallery_set_counters.html"
+            (dict "ctx" $.Page "gallery_counter" $gallery_counter "gallery_image_counter" $gallery_image_counter) }}

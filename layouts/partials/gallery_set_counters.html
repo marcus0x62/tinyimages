@@ -1,0 +1,7 @@
+{{- $ctx := .ctx }}
+{{- $gallery_counter := int .gallery_counter }}
+{{- $gallery_image_counter := int .gallery_image_counter }}
+{{- with .ctx }}
+  {{- $ctx.Scratch.Set "gallery-counter" $gallery_counter }}
+  {{- $ctx.Scratch.Set "gallery-image-counter" $gallery_image_counter }}
+{{- end }}

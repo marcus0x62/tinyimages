@@ -1,123 +1,50 @@
-{{- if not (.Page.Scratch.Get "gallery-js") }}
-  {{- .Page.Scratch.Set "gallery-js" 1 }}
-  {{- partial "gallery_preamble" }}
-{{- end }}
-{{ $gallery_counter := 1 }}
-{{- $gallery_image_counter := 1 }}
-{{- with .Page.Scratch.Get "gallery-counter" }}
-  {{- $gallery_counter = . }}  
-{{- else }}
-  {{- .Page.Scratch.Set "gallery-counter" "1" }}
-{{- end }}
-{{- if not (.Page.Scratch.Get "gallery-image-counter") }}
-  {{- .Page.Scratch.Set "gallery-image-counter" 1 }}
-{{ else }}
-  {{ $gallery_image_counter = .Page.Scratch.Get "gallery-image-counter" }}  
-{{- end }}
-{{- $param_offset := 0 }}
-{{- $div_options := dict }}
-{{- if hasPrefix (.Get 0) "#" }}
-  {{- $param_offset = 1 }}
-  {{- range (strings.Split (strings.TrimPrefix "#" (.Get 0)) "&") }}
-    {{- $arg := index (strings.Split . "=") 0 }}
-    {{- $val := index (strings.Split . "=") 1 }}
-    {{- $div_options = merge $div_options (dict $arg $val) }}
-  {{- end }}
-{{- end }}
-{{- $div_style := slice }}  
-{{- if isset $div_options "float" }}
-  {{- $div_style = $div_style | append (printf "float: %s;" ($div_options.float)) }}
-{{- end }}
-{{- if isset $div_options "max_width" }}
-  {{- $div_style = $div_style | append (printf "max-width: %s%%;" ($div_options.max_width)) }}
-{{- end }}
-{{- if isset $div_options "center" }}
-  {{- $div_style = $div_style | append (printf "margin-left: auto; margin-right: auto;") }}
-{{- end }}
+{{- partial "gallery_preamble" .Page.Scratch }}
+{{- $counters := partial "gallery_get_counters.html" . }}
+{{- $gallery_counter := (index $counters 0) }}
+{{- $gallery_image_counter := (index $counters 1) }}
+{{- $div_style := partial "gallery_divoptions.html" (.Get 0) }}
 <div id="gallery-{{ .Page.Scratch.Get "gallery-counter" }}" class="gallery" style="{{ range $div_style }}{{ . | safeCSS }}{{ end }}">
-{{- $formats := slice "avif" "webp" "png" "jpg" "jpeg" "tif" "tiff" }}
-{{- $i := $gallery_image_counter }}
-{{- .Scratch.Set "i" $i }}
 {{- $primary_set := false }}
-{{- range last (sub (len .Params) $param_offset) .Params }}
-  {{ $alt := "" }}
-  {{- $url := urls.Parse . }}
-  {{- if not $url.Scheme }}
-    {{- $file := "" }}
-    {{- $file_path := "" }}
-    {{- $file_base_name := "" }}
-    {{- $file_name := "" }}
-    {{- $file_ext := "" }}
-    {{- $style := slice }}
-    {{- if not (hasPrefix $url.Path "/") }}
-      {{- $file = (path.Join (path.Dir $.Page.File.Path) $url.Path) }}
-      {{- $file_path = path.Dir $.Page.File.Path }}
-      {{- $file_name = index (strings.Split $url.Path ".") 0 }}
-      {{- $file_base_name = $file_name }}
-      {{- if strings.Contains $file_name "/" }}
-        {{- $slice := split $file_name "/" }}
-        {{- $file_base_name = (index (last 1 $slice) 0) }}
-      {{- end }}
-      {{- $file_ext = index (strings.Split $url.Path ".") 1 }}
-    {{- else }}
-      {{- $file = $url }}
-    {{- end }}
-    {{- $image_variants := 1 }}
-    {{- $variants := slice }}
-    {{- range $formats }}
-      {{- if not (eq . $file_ext) }}
-        {{- $test_file := printf "%s/%s.%s" $file_path $file_name . }}
-        {{- $variant_file := printf "%s.%s" $file_name . }}
-        {{- if fileExists $test_file }}
-          {{- $image_variants = add $image_variants 1 }}
-          {{- $variants = $variants | append $variant_file }}
-        {{- end }}
-      {{- end  }}
-    {{- end }}
-    {{- if $url.Query.Has "float" }}
-      {{- $float_style := printf "float: %s;" ($url.Query.Get "float") }}      
-      {{- $style = $style | append $float_style }}
-    {{- end }}
-    {{- if $url.Query.Has "alt" }}
-      {{- $alt = $url.Query.Get "alt" }}
-    {{ end }}
-    <picture id="gallery-picture-{{ $i }}"
-    {{- if eq $primary_set false }}
-      class="gallery-picture-primary">
-    {{- else }}
-      class="gallery-picture-thumbnail">
-    {{- end }}
-    {{- $path := path.Dir $.Page.File.Path }}
-    {{- $avif := printf "%s/%s.avif" $path $file_name }}
-    {{- $webp := printf "%s/%s.webp" $path $file_name }}
-    {{- if fileExists $avif }}
-      <source srcset="{{ $file_base_name }}.avif" type="image/avif" />
-    {{- end }}
-    {{- if fileExists $webp }}
-      <source srcset="{{ $file_base_name }}.webp" type="image/webp" />
-    {{- end }}
-    <img
-     id="gallery-image-{{ $i }}"
-     src="{{ $file_base_name }}.{{ $file_ext }}"
-     {{- if eq $i 1 }}
-       class="gallery-image-primary"
-     {{- else }}
-       class="gallery-image-thumbnail"
-     {{- end }}
-     alt="{{ $alt }}"
-     style="{{ range $style }}{{ . | safeCSS }}{{ end }}"
-     loading="lazy"
-     {{- if eq $primary_set false }}
-       onClick="zoom('gallery-image-{{ $i }}');"
-       {{- $primary_set = true }}
-     {{- else }}
-       onClick="replace({{ $gallery_counter }}, {{ $i }} );"
-     {{- end }}
-    />
-  </picture>
-  {{- $i = add $i 1 }}
+{{- range .Params }}
+  {{- if hasPrefix . "#" }}
+    {{- continue }}
   {{- end }}
-{{- end }}  
+  {{- $alt := "" }}
+  {{- $url := urls.Parse . }}
+  {{- $file := partial "gallery_file.html" (dict "file" . "ctx" $.Page) }}
+  {{- if $url.Query.Has "alt" }}
+    {{- $alt = $url.Query.Get "alt" }}
+  {{ end }}
+  <picture id="gallery-picture-{{ $gallery_image_counter }}"
+  {{- if eq $primary_set false }}
+    class="gallery-picture-primary">
+  {{- else }}
+    class="gallery-picture-thumbnail">
+  {{- end }}
+  {{- with $file.avif }}
+    <source srcset="{{ . }}" type="image/avif" />
+  {{- end }}
+  {{- with $file.webp }}
+    <source srcset="{{ . }}" type="image/webp" />
+  {{- end }}
+  <img
+   id="gallery-image-{{ $gallery_image_counter }}"
+   src="{{ $file.orig }}"
+   {{- if eq $primary_set false }}
+     class="gallery-image-primary"
+     onClick="zoom('gallery-image-{{ $gallery_image_counter }}');"
+     {{- $primary_set = true }}
+   {{- else }}
+     class="gallery-image-thumbnail"
+     onClick="replace({{ $gallery_counter }}, {{ $gallery_image_counter }});"
+   {{- end }}
+   alt="{{ $alt }}"
+   loading="lazy"
+  />
+  </picture>
+  {{- $gallery_image_counter = add $gallery_image_counter 1 }}
+{{- end }}
 </div>
-{{- .Page.Scratch.Add "gallery-counter" "1" }}
-{{- .Page.Scratch.Set "gallery-image-counter" $i }}
+{{- $gallery_counter = add $gallery_counter 1 }}
+{{- partial "gallery_set_counters.html"
+            (dict "ctx" $.Page "gallery_counter" $gallery_counter "gallery_image_counter" $gallery_image_counter) }}

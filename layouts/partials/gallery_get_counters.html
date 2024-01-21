@@ -1,0 +1,13 @@
+{{- $gallery_counter := 1 }}
+{{- $gallery_image_counter := 1 }}
+{{- with $.Page.Scratch.Get "gallery-counter" }}
+  {{- $gallery_counter = . }}  
+{{- else }}
+  {{- $.Page.Scratch.Set "gallery-counter" "1" }}
+{{- end }}
+{{- with $.Page.Scratch.Get "gallery-image-counter" }}
+  {{- $gallery_image_counter = $.Page.Scratch.Get "gallery-image-counter" }}  
+{{- else }}
+  {{- $.Page.Scratch.Set "gallery-image-counter" 1 }}
+{{- end }}
+{{- return (slice $gallery_counter $gallery_image_counter) }}

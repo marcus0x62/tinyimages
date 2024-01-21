@@ -1,0 +1,36 @@
+{{- partial "gallery_preamble" .Page.Scratch }}
+{{- $counters := partial "gallery_get_counters.html" . }}
+{{- $gallery_counter := (index $counters 0) }}
+{{- $gallery_image_counter := (index $counters 1) }}
+{{- $div_style := partial "gallery_divoptions.html" (.Get 0) }}
+<div class="gallery-showcase-div" id="gallery-showcase-div-{{ .Page.Scratch.Get "gallery-counter" }}"
+     style="{{ range $div_style }}{{ . | safeCSS }}{{ end }}">
+  <script>
+    showcase_load({{ safeJS (.Page.Scratch.Get "gallery-counter") }}, [
+    {{- range .Params }}
+      {{- if hasPrefix . "#" }}
+        {{- continue }}
+      {{- end }}
+      {{- $file := partial "gallery_file.html" (dict "file" . "ctx" $.Page) }}
+      {{- safeJS (printf "{'image': [") }}      
+      {{- $alt := "" }}
+      {{- with $file.avif }}
+        {{- safeJS (printf "'%s', " .) }}
+      {{- end }}
+      {{- with $file.webp }}
+        {{- safeJS (printf "'%s', " .) }}
+      {{- end }}
+      {{- with $file.orig }}
+        {{- safeJS (printf "'%s'], " $file.orig) }}
+      {{- else }}
+        {{- safeJS (printf "], ") }}
+      {{- end }}
+      {{- safeJS (printf "'index': %d}," $gallery_image_counter) }}  
+      {{- $gallery_image_counter = add $gallery_image_counter 1 }}
+    {{- end }}
+    ]);
+  </script>
+</div>
+{{- $gallery_counter = add $gallery_counter 1 }}
+{{- partial "gallery_set_counters.html"
+            (dict "ctx" $.Page "gallery_counter" $gallery_counter "gallery_image_counter" $gallery_image_counter) }}

@@ -1,0 +1,22 @@
+{{- $div_options := dict }}
+{{- $div_style := slice }}  
+{{- if hasPrefix . "#" }}
+  {{- range (strings.Split (strings.TrimPrefix "#" .) "&") }}
+    {{- $arg := index (strings.Split . "=") 0 }}
+    {{- $val := index (strings.Split . "=") 1 }}
+    {{- $div_options = merge $div_options (dict $arg $val) }}
+  {{- end }}
+  {{- if isset $div_options "float" }}
+    {{- $div_style = $div_style | append (printf "float: %s;" ($div_options.float)) }}
+  {{- end }}
+  {{- if isset $div_options "max_width" }}
+    {{- $div_style = $div_style | append (printf "max-width: %s%%;" ($div_options.max_width)) }}
+  {{- end }}
+  {{- if isset $div_options "width" }}
+    {{- $div_style = $div_style | append (printf "width: %s%%;" ($div_options.width)) }}
+  {{- end }}
+  {{- if isset $div_options "center" }}
+    {{- $div_style = $div_style | append (printf "margin-left: auto; margin-right: auto;") }}
+  {{- end }}
+{{- end }}
+{{- return $div_style }}

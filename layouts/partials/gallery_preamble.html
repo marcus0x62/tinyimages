@@ -1,0 +1,8 @@
+{{- if not (.Get "gallery-js") }}
+  {{- .Set "gallery-js" 1 }}
+
+{{- $gallery_js := resources.Get "js/gallery.js" | minify | fingerprint }}
+{{- $gallery_css := resources.Get "css/gallery.css" | minify | fingerprint }}
+<script src="{{ $gallery_js.RelPermalink }}"></script>
+<link rel="stylesheet" href="{{ $gallery_css.RelPermalink }}"/>
+{{- end }}
