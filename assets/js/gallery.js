@@ -95,7 +95,7 @@ function replace(galleryid, imageid) {
 function showcase_load(showcase_id, images) {
     console.log(`Running showcase_load(${showcase_id}, ${images});`);
 
-    image_data = images;
+    image_data[showcase_id] = images;
 
     let div = document.getElementById(`gallery-showcase-div-${showcase_id}`);
     while (div.firstChild) {
@@ -152,7 +152,7 @@ function showcase_load(showcase_id, images) {
 }
 
 function showcase_change (showcase_id, image_id) {
-    let image = image_data[image_id];
+    let image = image_data[showcase_id][image_id];
     let old_picture = document.getElementById(`gallery-showcase-div-${showcase_id}`).firstChild;
 
     let picture = document.createElement('picture');
@@ -205,12 +205,15 @@ function showcase_overlay(showcase_id, image_id) {
         first_run = false;
     }
 
+    let offsetx = div.getBoundingClientRect().left + window.pageXOffset;
+    let offsety = div.getBoundingClientRect().top + window.pageYOffset;
+
     overlay.id = `gallery-showcase-${showcase_id}-overlay-div`;
     overlay.classList.add('gallery-showcase-overlay');
     overlay.style.height = `${rect.height}px`;
     overlay.style.width = `${rect.width}px`;
-    overlay.style.top = `${rect.y}px`;
-    overlay.style.left = `${rect.x}px`;
+    overlay.style.top = `${offsety}px`;
+    overlay.style.left = `${offsetx}px`;
 
     let leftlink = null;
     let rightlink = null;
@@ -256,7 +259,7 @@ function showcase_overlay(showcase_id, image_id) {
 
     leftlink.addEventListener('mouseup', (event) => {
         if (image_id == 0) {
-            showcase_change(showcase_id, image_data.length - 1);
+            showcase_change(showcase_id, image_data[showcase_id].length - 1);
         } else {
             showcase_change(showcase_id, image_id - 1);
         }
@@ -288,7 +291,7 @@ function showcase_overlay(showcase_id, image_id) {
     });
 
     rightlink.addEventListener('mouseup', (event) => {
-        if (image_id == image_data.length - 1) {
+        if (image_id == image_data[showcase_id].length - 1) {
             showcase_change(showcase_id, 0);
         } else {
             showcase_change(showcase_id, image_id + 1);
