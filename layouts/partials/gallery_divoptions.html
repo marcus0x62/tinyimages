@@ -14,6 +14,7 @@
   {{- end }}
   {{- if isset $div_options "width" }}
     {{- $div_style = $div_style | append (printf "width: %s%%;" ($div_options.width)) }}
+    {{- $div_style = $div_style | append (printf "height: auto;") }}
   {{- end }}
   {{- if isset $div_options "center" }}
     {{- $div_style = $div_style | append (printf "margin-left: auto; margin-right: auto;") }}
