@@ -339,14 +339,29 @@ function showcase_overlay(showcase_id, image_id) {
     overlay.append(rightlink);
 }
 
+function dynamic_css(obj, css) {
+    if (css != null) {
+        let elements = css.split(';');
+        for (i = 0; i < elements.length; i++) {
+            let tokens = elements[i].split(':');
+            if(tokens.length == 2) {
+                obj.style[tokens[0]] = tokens[1];
+            }
+        }
+    }
+}
+
 function init_galleries() {
     let i = 0;
 
     // Handle single images from the render-image hook first.
-    let images = document.getElementsByClassName('gallery-image');
+    let images = document.getElementsByClassName('gallery-image-standalone');
     for (image of images) {
         let img = image.querySelector('img');
         let id = img.id.split('-')[2];
+
+        let css = image.getAttribute('data-css');
+        dynamic_css(image, css);
 
         let closure = function() {
             return function() {
@@ -373,6 +388,9 @@ function init_galleries() {
                 continue;
             }
 
+            let css = obj.getAttribute('data-css');
+            dynamic_css(obj, css);
+
             for (image of images) {
                 let id = image.id.split('-')[2];
 
@@ -385,12 +403,18 @@ function init_galleries() {
                 image.addEventListener('click', closure);
             }
         } else if (obj.classList.contains('gallery-showcase-div')) {
+            let css = obj.getAttribute('data-css');
+            dynamic_css(obj, css);
+
             let id = obj.getAttribute('data-galleryid');
             let images = obj.getAttribute('data-imagelist');
 
             let json = JSON.parse(images);
             showcase_load(id, json['images']);
         } else if (obj.classList.contains('gallery')) {
+            let css = obj.getAttribute('data-css');
+            dynamic_css(obj, css);
+
             let primary = obj.getElementsByClassName('gallery-image-primary')[0];
             if (primary == null) {
                 console.log(`gallery error: no primary image found for gallery ${i}`);

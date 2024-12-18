@@ -3,7 +3,7 @@
 {{- $gallery_counter := (index $counters 0) }}
 {{- $gallery_image_counter := (index $counters 1) }}
 {{- $div_style := partial "gallery_divoptions.html" (.Get 0) }}
-<div id="gallery-{{ .Page.Scratch.Get "gallery-counter" }}" class="gallery" style="{{ range $div_style }}{{ . | safeCSS }}{{ end }}">
+<div id="gallery-{{ .Page.Scratch.Get "gallery-counter" }}" class="gallery" data-css="{{ range $div_style }}{{ . | safeCSS }}{{ end }}">
 {{- $primary_set := false }}
 {{- range .Params }}
   {{- if hasPrefix . "#" }}

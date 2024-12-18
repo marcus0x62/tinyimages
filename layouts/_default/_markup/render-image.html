@@ -12,7 +12,7 @@
 {{- $div_style := partial "gallery_divoptions.html" $div_options }}
 {{- $id := printf "gallery-image-%d" $gallery_image_counter }}
 {{- $file := partial "gallery_file.html" (dict "file" $image_url "ctx" $.Page) }}
-<div class="gallery-image" style="{{ range $div_style }}{{ . | safeCSS }}{{ end }}">
+<div class="gallery-image-standalone" data-css="{{ range $div_style }}{{ . | safeCSS }}{{ end }}">
   <picture>
     {{- with $file.avif }}
       <source srcset="{{ . }}" type="image/avif"/>

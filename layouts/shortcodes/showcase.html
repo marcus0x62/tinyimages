@@ -4,7 +4,7 @@
 {{- $gallery_image_counter := (index $counters 1) }}
 {{- $div_style := partial "gallery_divoptions.html" (.Get 0) }}
 <div class="gallery-showcase-div" id="gallery-{{ .Page.Scratch.Get "gallery-counter" }}"
-     style="{{ range $div_style }}{{ . | safeCSS }}{{ end }}"
+     data-css="{{ range $div_style }}{{ . | safeCSS }}{{ end }}"
      data-galleryid="{{ .Page.Scratch.Get "gallery-counter" }}"
      data-imagelist="{{- safeJS (printf "{\"images\": [") }}
     {{- $showcase_index := 1 -}}

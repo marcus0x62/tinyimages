@@ -3,7 +3,7 @@
 {{- $gallery_counter := (index $counters 0) }}
 {{- $gallery_image_counter := (index $counters 1) }}
 {{- $div_style := partial "gallery_divoptions.html" (.Get 0) }}
-<div id="gallery-{{ $gallery_counter }}" class="gallery-grid-div" style="{{ range $div_style }}{{ . | safeCSS }}{{ end }}">
+<div id="gallery-{{ $gallery_counter }}" class="gallery-grid-div" data-css="{{ range $div_style }}{{ . | safeCSS }}{{ end }}">
 {{- range .Params }}
   {{- if hasPrefix . "#" }}
     {{- continue }}
@@ -23,7 +23,7 @@
      src="{{ $file.orig }}"
      class="gallery-grid-image"
      alt="{{ $alt }}"
-     style="{{ range $style }}{{ . | safeCSS }}{{ end }}"
+     data-style="{{ range $style }}{{ . | safeCSS }}{{ end }}"
      loading="lazy"
     />
   </picture>
