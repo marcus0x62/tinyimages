@@ -11,8 +11,7 @@
   {{- $style := slice }}
   {{- $alt := "" }}
   {{- $file := partial "gallery_file.html" (dict "file" . "ctx" $.Page) }}
-    <picture id="gallery-picture-{{ $gallery_image_counter }}"
-      class="gallery-grid-picture">
+    <picture id="gallery-picture-{{ $gallery_image_counter }}" class="gallery-grid-picture">
     {{- with $file.avif }}
       <source srcset="{{ . }}" type="image/avif" />
     {{- end }}
@@ -26,11 +25,10 @@
      alt="{{ $alt }}"
      style="{{ range $style }}{{ . | safeCSS }}{{ end }}"
      loading="lazy"
-     onClick="zoom('gallery-image-{{ $gallery_image_counter }}');"
     />
   </picture>
   {{- $gallery_image_counter = add $gallery_image_counter 1 }}
-{{- end }}  
+{{- end }}
 </div>
 {{- $gallery_counter = add $gallery_counter 1 }}
 {{- partial "gallery_set_counters.html"

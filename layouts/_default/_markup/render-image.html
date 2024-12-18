@@ -24,7 +24,6 @@
          {{- with $file.style }}
            style="{{ range . }}{{ . | safeCSS }}{{ end }}"
          {{- end }}
-         onClick="zoom('{{ $id }}');"
          {{- with $file.alt }}
            alt="{{ . }}"
          {{- else }}

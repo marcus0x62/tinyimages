@@ -32,11 +32,9 @@
    src="{{ $file.orig }}"
    {{- if eq $primary_set false }}
      class="gallery-image-primary"
-     onClick="zoom('gallery-image-{{ $gallery_image_counter }}');"
      {{- $primary_set = true }}
    {{- else }}
      class="gallery-image-thumbnail"
-     onClick="replace({{ $gallery_counter }}, {{ $gallery_image_counter }});"
    {{- end }}
    alt="{{ $alt }}"
    loading="lazy"

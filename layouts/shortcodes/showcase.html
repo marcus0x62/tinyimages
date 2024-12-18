@@ -3,33 +3,38 @@
 {{- $gallery_counter := (index $counters 0) }}
 {{- $gallery_image_counter := (index $counters 1) }}
 {{- $div_style := partial "gallery_divoptions.html" (.Get 0) }}
-<div class="gallery-showcase-div" id="gallery-showcase-div-{{ .Page.Scratch.Get "gallery-counter" }}"
-     style="{{ range $div_style }}{{ . | safeCSS }}{{ end }}">
-  <script>
-    showcase_load({{ safeJS (.Page.Scratch.Get "gallery-counter") }}, [
+<div class="gallery-showcase-div" id="gallery-{{ .Page.Scratch.Get "gallery-counter" }}"
+     style="{{ range $div_style }}{{ . | safeCSS }}{{ end }}"
+     data-galleryid="{{ .Page.Scratch.Get "gallery-counter" }}"
+     data-imagelist="{{- safeJS (printf "{\"images\": [") }}
+    {{- $showcase_index := 1 -}}
     {{- range .Params }}
       {{- if hasPrefix . "#" }}
         {{- continue }}
       {{- end }}
+
+      {{- if gt $showcase_index 1 -}}
+      ,
+      {{- end -}}
       {{- $file := partial "gallery_file.html" (dict "file" . "ctx" $.Page) }}
-      {{- safeJS (printf "{'image': [") }}      
+      {{- safeJS (printf "{\"image\": [") }}
       {{- $alt := "" }}
       {{- with $file.avif }}
-        {{- safeJS (printf "'%s', " .) }}
+        {{- safeJS (printf "\"%s\", " .) }}
       {{- end }}
       {{- with $file.webp }}
-        {{- safeJS (printf "'%s', " .) }}
+        {{- safeJS (printf "\"%s\", " .) }}
       {{- end }}
       {{- with $file.orig }}
-        {{- safeJS (printf "'%s'], " $file.orig) }}
+        {{- safeJS (printf "\"%s\"], " $file.orig) }}
       {{- else }}
         {{- safeJS (printf "], ") }}
       {{- end }}
-      {{- safeJS (printf "'index': %d}," $gallery_image_counter) }}  
+      {{- safeJS (printf "\"index\": %d}" $gallery_image_counter) }}
       {{- $gallery_image_counter = add $gallery_image_counter 1 }}
-    {{- end }}
-    ]);
-  </script>
+      {{- $showcase_index = add $showcase_index 1 -}}
+    {{- end -}}
+    ]}">
 </div>
 {{- $gallery_counter = add $gallery_counter 1 }}
 {{- partial "gallery_set_counters.html"

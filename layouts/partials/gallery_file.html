@@ -11,13 +11,13 @@
     {{- $avif := printf "%s/%s.avif" $file_path $file_name }}
     {{- $webp := printf "%s/%s.webp" $file_path $file_name }}
     {{- if fileExists $avif }}
-      {{- $file = merge $file (dict "avif" (printf "%s.avif" $file_name))}} 
+      {{- $file = merge $file (dict "avif" (printf "%s.avif" $file_name))}}
     {{- end }}
     {{- if fileExists $webp }}
-      {{- $file = merge $file (dict "webp" (printf "%s.webp" $file_name))}} 
+      {{- $file = merge $file (dict "webp" (printf "%s.webp" $file_name))}}
     {{- end }}
     {{- if fileExists $orig }}
-      {{- $file = merge $file (dict "orig" (printf "%s.%s" $file_name $file_ext))}} 
+      {{- $file = merge $file (dict "orig" (printf "%s.%s" $file_name $file_ext))}}
     {{- end }}
     {{- if $url.Query.Has "alt" }}
       {{- $file = merge $file (dict "alt" ($url.Query.Get "alt")) }}
@@ -29,7 +29,7 @@
       {{- $style = $style | append (printf "max-width: %s%%;" ($url.Query.Get "max_width")) }}
     {{- end }}
     {{- if $url.Query.Has "float" }}
-      {{- $float_style := printf "float: %s;" ($url.Query.Get "float") }}      
+      {{- $float_style := printf "float: %s;" ($url.Query.Get "float") }}
       {{- $style = $style | append $float_style }}
     {{- end }}
     {{- if gt (len $style) 0 }}

@@ -1,3 +1,4 @@
+const replace_listeners = new Map();
 let image_data = [];
 let avif_re = new RegExp('.avif$');
 let webp_re = new RegExp('.webp$');
@@ -7,13 +8,13 @@ function zoom(id) {
 
     div = document.createElement("div");
     div.id = "zoom-div";
-    div.setAttribute('onclick', 'hide();');
+    div.addEventListener('click', hide);
     div.classList.add("gallery-zoom");
 
     p = document.createElement("a");
     p.textContent = "x";
     p.setAttribute('href', '#');
-    p.setAttribute('onclick', 'hide();');
+    p.addEventListener('click', hide);
 
     document.onkeydown = function(evt) {
         evt = evt || window.event;
@@ -76,28 +77,46 @@ function hide_key(e) {
 function replace(galleryid, imageid) {
     new_primary = document.getElementById("gallery-picture-" + imageid);
 
-    gallery = document.getElementById("gallery-" + galleryid);
+    gallery = document.getElementById(`gallery-${galleryid}`);
 
     for (child of gallery.children) {
         if (child == new_primary) {
             child.classList.replace("gallery-picture-thumbnail", "gallery-picture-primary");
             child.querySelector('img').classList.replace('gallery-image-thumbnail', 'gallery-image-primary');
-            child.querySelector('img').setAttribute('onclick', "zoom('gallery-image-" + imageid + "');");
+
+            let obj = child.querySelector('img');
+            let closure = function() {
+                return function() {
+                    zoom(`gallery-image-${imageid}`);
+                }
+            }();
+
+            obj.removeEventListener('click', replace_listeners.get(obj));
+            replace_listeners.set(obj, closure);
+            child.querySelector('img').addEventListener('click', replace_listeners.get(obj));
         } else if (child.classList.contains("gallery-picture-primary")) {
             childid = child.getAttribute('id').replace("gallery-picture-", "");
             child.classList.replace("gallery-picture-primary", "gallery-picture-thumbnail");
             child.querySelector('img').classList.replace('gallery-image-primary', 'gallery-image-thumbnail');
-            child.querySelector('img').setAttribute('onclick', `replace(${galleryid}, ${childid});`);
+
+            let obj = child.querySelector('img');
+            let closure = function() {
+                return function() {
+                    replace(galleryid, childid);
+                }
+            }();
+
+            obj.removeEventListener('click', replace_listeners.get(obj));
+            replace_listeners.set(obj, closure);
+            child.querySelector('img').addEventListener('click', replace_listeners.get(obj));
         }
     }
 }
 
 function showcase_load(showcase_id, images) {
-    console.log(`Running showcase_load(${showcase_id}, ${images});`);
-
     image_data[showcase_id] = images;
 
-    let div = document.getElementById(`gallery-showcase-div-${showcase_id}`);
+    let div = document.getElementById(`gallery-${showcase_id}`);
     while (div.firstChild) {
         div.removeChild(div.firstChild);
     }
@@ -120,7 +139,14 @@ function showcase_load(showcase_id, images) {
     img.loading = 'lazy';
     img.id = `gallery-showcase-${showcase_id}-current-image`;
     img.src = files[files.length - 1];
-    img.setAttribute('onLoad', `showcase_overlay(${showcase_id}, 0);`);
+
+    let closure = function() {
+        return function() {
+            showcase_overlay(showcase_id, 0);
+        }
+    }();
+
+    img.addEventListener('load', closure);
 
     picture.append(img);
     div.append(picture);
@@ -129,7 +155,7 @@ function showcase_load(showcase_id, images) {
     let bumper_left = document.createElement("i");
     bumper_left.classList.add('gallery-showcase-bumper-left');
     selectdiv.append(bumper_left);
-          
+
     selectdiv.id = `gallery-showcase-select-${showcase_id}`;
     selectdiv.classList.add("gallery-showcase-select");
     for (let i = 0; i < images.length; i++) {
@@ -140,7 +166,9 @@ function showcase_load(showcase_id, images) {
         } else {
             dot.classList.add("gallery-showcase-dot");
         }
-        dot.setAttribute('onClick', `showcase_change(${showcase_id}, ${i});`);
+        dot.addEventListener('click', (e) => {
+            showcase_change(showcase_id, i);
+        });
         selectdiv.append(dot);
     }
 
@@ -153,10 +181,10 @@ function showcase_load(showcase_id, images) {
 
 function showcase_change (showcase_id, image_id) {
     let image = image_data[showcase_id][image_id];
-    let old_picture = document.getElementById(`gallery-showcase-div-${showcase_id}`).firstChild;
+    let old_picture = document.getElementById(`gallery-${showcase_id}`).firstChild;
 
     let picture = document.createElement('picture');
-          
+
     for (let i = 0; i < image['image'].length - 1; i++) {
         let source = document.createElement("source");
         source.srcset = image['image'][i];
@@ -172,7 +200,14 @@ function showcase_change (showcase_id, image_id) {
     img.loading = 'lazy';
     img.src = image['image'][image['image'].length - 1];
     img.id = `gallery-showcase-${showcase_id}-current-image`;
-    img.setAttribute('onLoad', `showcase_overlay(${showcase_id}, ${image_id});`);
+
+    let closure = function() {
+        return function() {
+            showcase_overlay(showcase_id, image_id);
+        }
+    }();
+
+    img.addEventListener('load', closure);
     picture.append(img);
 
     old_picture.replaceWith(picture);
@@ -303,3 +338,96 @@ function showcase_overlay(showcase_id, image_id) {
     overlay.append(spacer);
     overlay.append(rightlink);
 }
+
+function init_galleries() {
+    let i = 0;
+
+    // Handle single images from the render-image hook first.
+    let images = document.getElementsByClassName('gallery-image');
+    for (image of images) {
+        let img = image.querySelector('img');
+        let id = img.id.split('-')[2];
+
+        let closure = function() {
+            return function() {
+                zoom(`gallery-image-${id}`);
+            }
+        }();
+
+        img.addEventListener('click', closure);
+    }
+
+    while (true) {
+        i++;
+
+        let obj = document.getElementById(`gallery-${i}`);
+
+        if (obj == null) {
+            break;
+        }
+
+        if (obj.classList.contains('gallery-grid-div')) {
+            let images = obj.getElementsByClassName('gallery-grid-image');
+            if (images == null) {
+                console.log(`gallery error: grid gallery ${i} contains no images`);
+                continue;
+            }
+
+            for (image of images) {
+                let id = image.id.split('-')[2];
+
+                let closure = function(id) {
+                    return function() {
+                        zoom(`gallery-image-${id}`);
+                    }
+                }(id);
+
+                image.addEventListener('click', closure);
+            }
+        } else if (obj.classList.contains('gallery-showcase-div')) {
+            let id = obj.getAttribute('data-galleryid');
+            let images = obj.getAttribute('data-imagelist');
+
+            let json = JSON.parse(images);
+            showcase_load(id, json['images']);
+        } else if (obj.classList.contains('gallery')) {
+            let primary = obj.getElementsByClassName('gallery-image-primary')[0];
+            if (primary == null) {
+                console.log(`gallery error: no primary image found for gallery ${i}`);
+                break;
+            }
+
+            let primary_id = primary.id.split('-')[2];
+
+            let closure = function(id) {
+                return function() {
+                    zoom(`gallery-image-${id}`);
+                }
+            }(primary_id);
+
+            replace_listeners.set(primary, closure);
+            primary.addEventListener('click', replace_listeners.get(primary));
+
+            let thumbnails = obj.getElementsByClassName('gallery-image-thumbnail');
+            for (thumbnail of thumbnails) {
+                let thumbnail_id = thumbnail.id.split('-')[2];
+
+                let closure = function(i, thumbnail_id) {
+                    return function() {
+                        replace(i, thumbnail_id);
+                    }
+                }(i, thumbnail_id);
+
+                replace_listeners.set(thumbnail, closure);
+                thumbnail.addEventListener('click', replace_listeners.get(thumbnail));
+            }
+        } else {
+            console.log(`gallery error: unknown gallery type for ${i}`);
+            continue;
+        }
+    }
+}
+
+(function() {
+    window.addEventListener('load', init_galleries);
+}());

@@ -3,6 +3,6 @@
 
 {{- $gallery_js := resources.Get "js/gallery.js" | minify | fingerprint }}
 {{- $gallery_css := resources.Get "css/gallery.css" | minify | fingerprint }}
-<script src="{{ $gallery_js.RelPermalink }}"></script>
-<link rel="stylesheet" href="{{ $gallery_css.RelPermalink }}"/>
+<script src="{{ $gallery_js.RelPermalink }}" integrity="{{ $gallery_js.Data.Integrity }}"></script>
+<link rel="stylesheet" href="{{ $gallery_css.RelPermalink }}" integrity="{{ $gallery_css.Data.Integrity }}"/>
 {{- end }}
