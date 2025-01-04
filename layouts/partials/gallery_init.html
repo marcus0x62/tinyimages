@@ -1,0 +1,15 @@
+<!--
+  -- Gallery initialization.  For the first time a gallery render function is called:
+  -- 1. Link in the gallery CSS file
+  -- 2. Initialize the gallery and image counters
+  -->
+{{- if not (.Get "gallery-css") }}
+  {{- .Set "gallery_counter" 1 }}
+  {{- .Set "image_counter" 1 }}
+  {{- .Set "gallery-css" 1 }}
+
+  {{- $gallery_css := resources.Get "css/gallery.css" | minify | fingerprint }}
+
+  <link rel="stylesheet" href="{{ $gallery_css.RelPermalink }}"
+        integrity="{{ $gallery_css.Data.Integrity }}"/>
+{{- end }}

@@ -1,38 +1,74 @@
-{{- partial "gallery_preamble" .Page.Scratch }}
-{{- $counters := partial "gallery_get_counters.html" . }}
-{{- $gallery_counter := (index $counters 0) }}
-{{- $gallery_image_counter := (index $counters 1) }}
+<!--
+  -- Single image render hook.  This replaces Hugo's default Markdown image render hook and has the
+  -- following capabilities:
+  --
+  -- 1. Automatic conversion to WebP, with fallback to the original format.
+  -- 2. CSS-only lightbox
+  -- 3. Click to view fullsize image in the Lightbox
+  -- 4. Selectable styles - max width, float-left, float-right, left, right, center justification.
+  -- 5. Separate caption/alt text support.
+  -->
+
+<!-- Initialize the gallery -->
+{{- partial "gallery_init" .Page.Scratch }}
+
+<!-- Since we might render multiple galleries and images, get a unique counter for each -->
+{{- $gallery_counter := .Page.Scratch.Get "gallery_counter" }}
+{{- $image_counter := .Page.Scratch.Get "image_counter" }}
+
+{{- $div_style := slice "" }}
 {{- $image_url := .Destination }}
-{{- $div_options := "" }}
+
+<!-- If the URL contains a hash, anything after that represents our gallery options -->
 {{- if strings.Contains $image_url "#" }}
   {{- $slice := split $image_url "#" }}
-  {{- $div_options = printf "#%s" (index $slice 1) }}
   {{- $image_url = index $slice 0 }}
+  {{- $div_style = partial "gallery_styles.html" (printf "#%s" (index $slice 1)) }}
 {{- end }}
-{{- $div_style := partial "gallery_divoptions.html" $div_options }}
-{{- $id := printf "gallery-image-%d" $gallery_image_counter }}
+
+<!-- Generate responsive image options for the gallery -->
 {{- $file := partial "gallery_file.html" (dict "file" $image_url "ctx" $.Page) }}
-<div class="gallery-image-standalone" data-css="{{ range $div_style }}{{ . | safeCSS }}{{ end }}">
-  <picture>
-    {{- with $file.avif }}
-      <source srcset="{{ . }}" type="image/avif"/>
-    {{- end }}
-    {{- with $file.webp }}
-      <source srcset="{{ . }}" type="image/webp"/>
-    {{- end }}
-      <img class="gallery-image-primary" src="{{ $file.orig }}" id="{{ $id }}"
-         {{- with $file.style }}
-           style="{{ range . }}{{ . | safeCSS }}{{ end }}"
-         {{- end }}
-         {{- with $file.alt }}
-           alt="{{ . }}"
-         {{- else }}
-           alt="{{ .Text }}"
-         {{- end }}
-    />
-  </picture>
-  <i class="gallery-caption">Caption: {{ .Text }}</i>
-</div>
-{{- $gallery_image_counter = add $gallery_image_counter 1}}
-{{- partial "gallery_set_counters.html"
-  (dict "ctx" $.Page "gallery_counter" $gallery_counter "gallery_image_counter" $gallery_image_counter) }}
+<figure class="gallery-standalone {{ range $div_style}}{{ . }}{{ end }}">
+  <div class="gallery-lightbox">
+    <a class="gallery-lightbox"
+       id="gallery-{{ $gallery_counter }}" href="#gallery-{{ $gallery_counter }}">
+      <picture>
+        {{- with $file.avif }}
+          <source srcset="{{ . }}" type="image/avif"/>
+        {{- end }}
+        {{- with $file.webp }}
+          <source srcset="{{ . }}" type="image/webp"/>
+        {{- end }}
+          <img class="gallery-image-primary" src="{{ $file.orig }}"
+            {{- with $file.style }}
+              style="{{ range . }}{{ . | safeCSS }}{{ end }}"
+            {{- end }}
+            {{- with $file.alt }}
+              alt="{{ . }}"
+            {{- else }}
+              alt="{{ .Text }}"
+            {{- end }}>
+      </picture>
+    </a>
+
+    <!-- This is the lightbox container.  Logically, we'd place this after the figure, but we need
+         the parent/child relationship for the CSS selector logic to work. -->
+    <div id="gallery-{{ $gallery_counter }}" class="gallery-lightbox-full">
+      {{ with $file.avif }}
+        <p class="gallery-lightbox-filler"></p>
+        <p class="gallery-lightbox-full"><a class="gallery-lightbox-full" href="#">
+          <img src="{{ . }}" class="gallery-lightbox-full">
+        </a></p>
+        <p class="gallery-lightbox-full">
+          <a href="{{ $file.avif }}">Click to view full size image</a>
+        </p>
+        <p class="gallery-lightbox-filler"></p>
+      {{ end }}
+    </div>
+  </div>
+  <figcaption>Caption: {{ .Text }}</figcaption>
+</figure>
+
+<!-- Update the image counters -->
+{{ .Page.Scratch.Set "gallery_counter" (add $gallery_counter 1) }}
+{{ .Page.Scratch.Set "image_counter" (add $image_counter 1) }}

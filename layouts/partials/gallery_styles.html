@@ -1,0 +1,37 @@
+{{/*
+
+*/}}
+
+{{- $div_options := dict }}
+{{- $div_style := slice }}
+{{- if hasPrefix . "#" }}
+  {{- range (strings.Split (strings.TrimPrefix "#" .) "&") }}
+    {{- $arg := index (strings.Split . "=") 0 }}
+    {{- $val := index (strings.Split . "=") 1 }}
+    {{- $div_options = merge $div_options (dict $arg $val) }}
+  {{- end }}
+  {{- if (and (isset $div_options "float") (eq $div_options.float "right")) }}
+    {{- $div_style = $div_style | append (printf "gallery-float-right ") }}
+  {{- end }}
+  {{- if (and (isset $div_options "float") (eq $div_options.float "left")) }}
+    {{- $div_style = $div_style | append (printf "gallery-float-left ") }}
+  {{- end }}
+  {{- if isset $div_options "max_height" }}
+    {{- $div_style = $div_style | append (printf "max-height: %s%%;" ($div_options.max_height)) }}
+  {{- end }}
+  {{- if isset $div_options "max_width" }}
+    {{- $div_style = $div_style | append (printf "max-width: %s%%;" ($div_options.max_width)) }}
+  {{- end }}
+  {{- if isset $div_options "height" }}
+    {{- $div_style = $div_style | append (printf "height: %s%%;" ($div_options.height)) }}
+    {{- $div_style = $div_style | append (printf "width: auto;") }}
+  {{- end }}
+  {{- if isset $div_options "width" }}
+    {{- $div_style = $div_style | append (printf "width: %s%%;" ($div_options.width)) }}
+    {{- $div_style = $div_style | append (printf "height: auto;") }}
+  {{- end }}
+  {{- if isset $div_options "center" }}
+    {{- $div_style = $div_style | append (printf "gallery-center ") }}
+  {{- end }}
+{{- end }}
+{{- return $div_style }}
