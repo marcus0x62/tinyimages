@@ -345,7 +345,9 @@ function dynamic_css(obj, css) {
         for (i = 0; i < elements.length; i++) {
             let tokens = elements[i].split(':');
             if(tokens.length == 2) {
-                obj.style[tokens[0]] = tokens[1];
+                let name = tokens[0].trim();
+                let value = tokens[1].trim();
+                obj.style[name] = value;
             }
         }
     }
