@@ -126,7 +126,7 @@
 
 /* Gallery Types */
 .gallery-standalone {
-    max-width: 75%;
+    margin-right: auto;
     text-align: center;
     font-style: italic;
 }
@@ -143,83 +143,83 @@
 }
 
 /* Dimensions */
-.gallery-max-width-10 {
+.gallery-maxwidth-10 {
     max-width: 10%;
 }
 
-.gallery-max-width-20 {
+.gallery-maxwidth-20 {
     max-width: 20%;
 }
 
-.gallery-max-width-30 {
+.gallery-maxwidth-30 {
     max-width: 30%;
 }
 
-.gallery-max-width-40 {
+.gallery-maxwidth-40 {
     max-width: 40%;
 }
 
-.gallery-max-width-50 {
+.gallery-maxwidth-50 {
     max-width: 50%;
 }
 
-.gallery-max-width-60 {
+.gallery-maxwidth-60 {
     max-width: 60%;
 }
 
-.gallery-max-width-70 {
+.gallery-maxwidth-70 {
     max-width: 70%;
 }
 
-.gallery-max-width-80 {
+.gallery-maxwidth-80 {
     max-width: 80%;
 }
 
-.gallery-max-width-90 {
+.gallery-maxwidth-90 {
     max-width: 90%;
 }
 
-.gallery-max-width-100 {
+.gallery-maxwidth-100 {
     max-width: 100%;
 }
 
-.gallery-max-height-10 {
+.gallery-maxheight-10 {
     max-height: 10%;
 }
 
-.gallery-max-height-20 {
+.gallery-maxheight-20 {
     max-height: 20%;
 }
 
-.gallery-max-height-30 {
+.gallery-maxheight-30 {
     max-height: 30%;
 }
 
-.gallery-max-height-40 {
+.gallery-maxheight-40 {
     max-height: 40%;
 }
 
-.gallery-max-height-50 {
+.gallery-maxheight-50 {
     max-height: 50%;
 }
 
-.gallery-max-height-60 {
+.gallery-maxheight-60 {
     max-height: 60%;
 }
 
-.gallery-max-height-70 {
+.gallery-maxheight-70 {
     max-height: 70%;
 }
 
-.gallery-max-height-80 {
+.gallery-maxheight-80 {
     max-height: 80%;
 }
 
-.gallery-max-height-90 {
+.gallery-maxheight-90 {
     max-height: 90%;
 }
 
-.gallery-max-height-100 {
+.gallery-maxheight-100 {
     max-height: 100%;
 }
 
@@ -309,6 +309,16 @@
     margin-right: auto;
 }
 
+.gallery-left {
+    margin-left: revert;
+    margin-right: auto;
+}
+
+.gallery-right {
+    margin-left: auto;
+    margin-right: revert;
+}
+
 .gallery-float-right {
     float: right;
 }
@@ -321,7 +331,7 @@
 div.gallery-lightbox-full {
     visibility: hidden;
     z-index: 1000;
-    position: absolute;
+    position: fixed;
     display: flex;
     flex-direction: column;
     background-color: rgba(0, 0, 0, 0.9);
@@ -335,6 +345,7 @@ div.gallery-lightbox-full {
 a.gallery-lightbox-full, img.gallery-lightbox-full, p.gallery-lightbox-full {
     margin: auto;
     max-width: 90%;
+    max-height: 90%;
 }
 
 p.gallery-lightbox-filler {

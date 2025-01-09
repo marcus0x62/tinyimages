@@ -1,37 +1,59 @@
-{{/*
-
-*/}}
-
-{{- $div_options := dict }}
-{{- $div_style := slice }}
+<!--
+  -- gallery_styles.html -- Returns a slice of CSS classes based on user-supplied options.
+  -- The following classes are supported:
+  --
+  -- gallery-center
+  -- gallery-left
+  -- gallery-right
+  -- gallery-float-right
+  -- gallery-float-left
+  -- gallery-maxheight-10, gallery-maxheight-20, ..., gallery-maxheight-100
+  -- gallery-maxwidth-10, gallery-maxwidth-20, ..., gallery-maxwidth-100
+  -->
+{{- $style := slice }}
 {{- if hasPrefix . "#" }}
   {{- range (strings.Split (strings.TrimPrefix "#" .) "&") }}
     {{- $arg := index (strings.Split . "=") 0 }}
     {{- $val := index (strings.Split . "=") 1 }}
-    {{- $div_options = merge $div_options (dict $arg $val) }}
-  {{- end }}
-  {{- if (and (isset $div_options "float") (eq $div_options.float "right")) }}
-    {{- $div_style = $div_style | append (printf "gallery-float-right ") }}
-  {{- end }}
-  {{- if (and (isset $div_options "float") (eq $div_options.float "left")) }}
-    {{- $div_style = $div_style | append (printf "gallery-float-left ") }}
-  {{- end }}
-  {{- if isset $div_options "max_height" }}
-    {{- $div_style = $div_style | append (printf "max-height: %s%%;" ($div_options.max_height)) }}
-  {{- end }}
-  {{- if isset $div_options "max_width" }}
-    {{- $div_style = $div_style | append (printf "max-width: %s%%;" ($div_options.max_width)) }}
-  {{- end }}
-  {{- if isset $div_options "height" }}
-    {{- $div_style = $div_style | append (printf "height: %s%%;" ($div_options.height)) }}
-    {{- $div_style = $div_style | append (printf "width: auto;") }}
-  {{- end }}
-  {{- if isset $div_options "width" }}
-    {{- $div_style = $div_style | append (printf "width: %s%%;" ($div_options.width)) }}
-    {{- $div_style = $div_style | append (printf "height: auto;") }}
-  {{- end }}
-  {{- if isset $div_options "center" }}
-    {{- $div_style = $div_style | append (printf "gallery-center ") }}
+
+    {{- if eq $arg "height" }}
+      {{- $style = $style | append (printf "height: %s%%;" $val) }}
+      {{- $style = $style | append (printf "width: auto;") }}
+    {{- end }}
+    {{- if eq $arg "width" }}
+      {{- $style = $style | append (printf "width: %s%%;" $val) }}
+      {{- $style = $style | append (printf "height: auto;") }}
+    {{- end }}
+
+    <!-- Positioning Options -->
+    {{- if eq $arg "center" }}
+      {{- $style = $style | append (printf "gallery-center") }}
+    {{- else if eq $arg "left" }}
+      {{- $style = $style | append (printf "gallery-left") }}
+    {{- else if eq $arg "right" }}
+      {{- $style = $style | append (printf "gallery-right") }}
+    {{- else if (and (eq $arg "float") (eq $val "right")) }}
+      {{- $style = $style | append (printf "gallery-float-right") }}
+    {{- else if (and (eq $arg "float") (eq $val "left")) }}
+      {{- $style = $style | append (printf "gallery-float-left") }}
+    {{- end }}
+
+    <!-- Maxwidth and maxheight are supported in multiples of 10 -->
+    {{- if eq $arg "maxwidth" }}
+      {{ range seq 10 10 100 }}
+        {{- if eq $val (printf "%d" .) }}
+          {{- $style = $style | append (printf "gallery-maxwidth-%d" .) }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+
+    {{- if eq $arg "maxheight" }}
+      {{ range seq 10 10 100 }}
+        {{- if eq $val (printf "%d" .) }}
+          {{- $style = $style | append (printf "gallery-maxheight-%d" .) }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
   {{- end }}
 {{- end }}
-{{- return $div_style }}
+{{- return $style }}

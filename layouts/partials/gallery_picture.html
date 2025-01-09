@@ -1,0 +1,38 @@
+<!--
+  -- gallery_picture.html -- This creates a <picture> tag set for a given image and options with the
+  -- following characteristics:
+  -- 1. Dynamically convert to WebP format
+  -- 1. Dynamically resize if the image is wider than 1920 * max-width.
+  -->
+
+{{- $alt := .alt }}
+{{- $class := .class }}
+
+<!-- Determine maxwidth setting -->
+{{- $maxwidth := 1 }}
+
+{{- $res := int (mul 1920 .maxwidth) }}
+
+<picture>
+  <!-- Only try to modify local images -->
+  {{- $url := urls.Parse .file }}
+  {{- if not $url.Scheme }}
+    {{- with .ctx.Resources.GetMatch .file }}
+      {{- $orig := . }}
+      {{- $webp := . }}
+
+      <!-- Resize and transcode if the image is wider than $res, otherwise just transcode -->
+      {{- if gt .Width $res }}
+        {{- $orig = .Process (printf "resize %dx" $res) }}
+        {{- $webp = .Process (printf "resize %dx webp" $res) }}
+      {{- else }}
+        {{- $webp = .Process "webp" }}
+      {{- end }}
+
+      <source srcset="{{ $webp.RelPermalink }}" type="image/webp"/>
+      <img class="{{ $class }}" src="{{ $orig.RelPermalink }}" alt="{{ $alt }}">
+    {{- end }}
+  {{- else }}
+    <img class="{{ $class }}" src="{{ $url }}" alt="{{ $alt }}">
+  {{- end }}
+</picture>
