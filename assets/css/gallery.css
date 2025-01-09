@@ -328,6 +328,10 @@
 }
 
 /* Lightbox */
+input.gallery-lightbox {
+    display: none;
+}
+
 div.gallery-lightbox-full {
     visibility: hidden;
     z-index: 1000;
@@ -342,16 +346,24 @@ div.gallery-lightbox-full {
     left: 0;
 }
 
-a.gallery-lightbox-full, img.gallery-lightbox-full, p.gallery-lightbox-full {
+label.gallery-lightbox-full {
+    cursor: zoom-out;
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+}
+
+picture.gallery-lightbox-full {
+    margin: auto;
+    width: 100vw;
+}
+
+img.gallery-lightbox-full {
     margin: auto;
     max-width: 90%;
     max-height: 90%;
 }
 
-p.gallery-lightbox-filler {
-    flex-grow: 1;
-}
-
-a.gallery-lightbox:target ~ div {
+.gallery-lightbox:checked ~ div {
     visibility: visible;
 }

@@ -38,28 +38,26 @@
 {{ end }}
 
 <figure class="gallery-standalone {{ range $styles }}{{ . }} {{ end }}">
-  <div class="gallery-lightbox">
-    <a class="gallery-lightbox"
-       id="gallery-{{ $gallery_counter }}" href="#gallery-{{ $gallery_counter }}">
-      {{- partial "gallery_picture.html"
-      (dict "class" "gallery-image-primary" "file" $image_url "ctx" $.Page
-            "maxwidth" $maxwidth) }}
-    </a>
+  <input class="gallery-lightbox" type="checkbox"
+         id="gallery-lightbox-input-{{ $gallery_counter }}-{{ $image_counter }}">
+  <label for="gallery-lightbox-input-{{ $gallery_counter }}-{{ $image_counter }}" title="Close">
+    {{- partial "gallery_picture.html"
+                (dict "class" "gallery-image-primary" "file" $image_url "ctx" .Page
+                       "maxwidth" $maxwidth) }}
+  </label>
 
-    <!-- This is the lightbox container.  Logically, we'd place this after the figure, but we need
-         the parent/child relationship for the CSS selector logic to work. -->
-    <div id="gallery-{{ $gallery_counter }}" class="gallery-lightbox-full">
-      <p class="gallery-lightbox-filler"></p>
-      <p class="gallery-lightbox-full"><a class="gallery-lightbox-full" href="#void">
+  <!-- This is the lightbox container.  Logically, we'd place this after the figure, but we need
+       the sibling relationship for the CSS selector logic to work. -->
+  <div id="gallery-{{ $gallery_counter }}" class="gallery-lightbox-full">
+    <label class="gallery-lightbox-full"
+           for="gallery-lightbox-input-{{ $gallery_counter }}-{{ $image_counter }}" title="Close">
         {{- partial "gallery_picture.html"
-                   (dict "class" "gallery-lightbox-full" "maxwidth" 0.9 "file" $image_url
-                         "ctx" .Page) }}
-        </a></p>
-        <p class="gallery-lightbox-full">
-          <a href="{{ $image_url }}">Click to view full size image</a>
-        </p>
-        <p class="gallery-lightbox-filler"></p>
-    </div>
+                    (dict "class" "gallery-lightbox-full" "maxwidth" 0.9 "file" $image_url
+                          "ctx" .Page) }}
+    </label>
+    <p class="gallery-lightbox-full">
+      <a href="{{ $image_url }}">Click to view full size image</a>
+    </p>
   </div>
   <figcaption>Caption: {{ .Text }}</figcaption>
 </figure>

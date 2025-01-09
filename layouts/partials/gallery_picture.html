@@ -13,7 +13,7 @@
 
 {{- $res := int (mul 1920 .maxwidth) }}
 
-<picture>
+<picture class="{{ $class }}">
   <!-- Only try to modify local images -->
   {{- $url := urls.Parse .file }}
   {{- if not $url.Scheme }}
