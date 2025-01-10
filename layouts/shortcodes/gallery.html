@@ -1,48 +1,136 @@
-{{- partial "gallery_preamble" .Page.Scratch }}
-{{- $counters := partial "gallery_get_counters.html" . }}
-{{- $gallery_counter := (index $counters 0) }}
-{{- $gallery_image_counter := (index $counters 1) }}
-{{- $div_style := partial "gallery_divoptions.html" (.Get 0) }}
-<div id="gallery-{{ .Page.Scratch.Get "gallery-counter" }}" class="gallery" data-css="{{ range $div_style }}{{ . | safeCSS }}{{ end }}">
-{{- $primary_set := false }}
-{{- range .Params }}
-  {{- if hasPrefix . "#" }}
-    {{- continue }}
-  {{- end }}
-  {{- $alt := "" }}
-  {{- $url := urls.Parse . }}
-  {{- $file := partial "gallery_file.html" (dict "file" . "ctx" $.Page) }}
-  {{- if $url.Query.Has "alt" }}
-    {{- $alt = $url.Query.Get "alt" }}
-  {{ end }}
-  <picture id="gallery-picture-{{ $gallery_image_counter }}"
-  {{- if eq $primary_set false }}
-    class="gallery-picture-primary">
-  {{- else }}
-    class="gallery-picture-thumbnail">
-  {{- end }}
-  {{- with $file.avif }}
-    <source srcset="{{ . }}" type="image/avif" />
-  {{- end }}
-  {{- with $file.webp }}
-    <source srcset="{{ . }}" type="image/webp" />
-  {{- end }}
-  <img
-   id="gallery-image-{{ $gallery_image_counter }}"
-   src="{{ $file.orig }}"
-   {{- if eq $primary_set false }}
-     class="gallery-image-primary"
-     {{- $primary_set = true }}
-   {{- else }}
-     class="gallery-image-thumbnail"
-   {{- end }}
-   alt="{{ $alt }}"
-   loading="lazy"
-  />
-  </picture>
-  {{- $gallery_image_counter = add $gallery_image_counter 1 }}
+<!--
+  -- thumbnail_gallery.html -- A basic thumbnail gallery that shows one zoomed image at a time with
+  -- lightbox support.
+  --
+  -- 1. Automatic conversion to WebP, with fallback to the original format.
+  -- 2. CSS-only gallery/lightbox
+  -- 3. Click to view fullsize image in the Lightbox
+  -- 4. Selectable styles - max width, float-left, float-right, left, right, center justification.
+  -- 5. Separate caption/alt text support.
+  -->
+
+<!-- Initialize the gallery -->
+{{- partial "gallery_init" .Page.Scratch }}
+
+<!-- Since we might render multiple galleries and images, get a unique counter for each -->
+{{- $gallery_counter := .Page.Scratch.Get "gallery_counter" }}
+{{- $image_counter   := .Page.Scratch.Get "image_counter" }}
+
+<!-- Gallery options are set in the form image.png#option1=foo&option2=bar... -->
+{{- $styles := slice "" }}
+{{- if strings.Contains (.Get 0) "#" }}
+  {{- $styles = partial "gallery_styles.html" (.Get 0) }}
 {{- end }}
+
+<!-- Figure the maxwidth %.  Tinyimages only supports multiples of 10. Defaults to 0.9. -->
+{{- $maxwidth := 0.9 }}
+{{ range seq 10 10 100 }}
+  {{ $i := . }}
+  {{ range $styles }}
+    {{ if eq . (printf "gallery-maxwidth-%d" $i) }}
+      {{ $maxwidth = div $i 100.0 }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{- $primary_set := false }}
+{{- $n_images := 0 }}
+{{- $saved_counter := $image_counter }}
+
+<div class="gallery-thumbnail
+            {{ range $styles }} {{ . }} {{ end }}">
+  <div class="gallery-thumbnail-focusimage">
+  {{- range .Params }}
+      {{ $image_url := . }}
+      {{ $alt := "" }}
+      {{ $caption := "" }}
+      {{- if hasPrefix $image_url "#" }}
+        {{- continue }}
+      {{- else if strings.Contains $image_url "?" }}
+        {{- $url := urls.Parse $image_url }}
+        {{- if $url.Query.Has "alt" }}
+          {{- $alt = $url.Query.Get "alt" }}
+        {{- end }}
+        {{- if $url.Query.Has "caption" }}
+          {{- $caption = $url.Query.Get "caption" }}
+        {{- end }}
+        {{- $image_url = $url.Path }}
+      {{- end }}
+      <input class="gallery-thumbnail-focusimage" type="radio"
+             name="gallery-thumbnail-radio-{{ $gallery_counter }}"
+             id="gallery-thumbnail-input-{{ $gallery_counter }}-{{ $image_counter }}"
+             {{- if eq $primary_set false }}
+               checked="checked"
+               {{- $primary_set = true }}
+             {{- end }}>
+      <figure class="gallery-thumbnail-focusimage"
+              id="gallery-figure-{{ $gallery_counter }}-{{ $image_counter }}">
+        <input class="gallery-lightbox" type="checkbox"
+               id="gallery-lightbox-input-{{ $gallery_counter }}-{{ $image_counter }}">
+        <label for="gallery-lightbox-input-{{ $gallery_counter }}-{{ $image_counter }}"
+               title="Close">
+          {{- partial "gallery_picture.html"
+                      (dict "class" "gallery-image-primary" "file" $image_url "ctx" $.Page
+                            "maxwidth" $maxwidth "alt" $alt) }}
+        </label>
+
+        <!-- This is the lightbox container.  Logically, we'd place this after the figure, but we
+             need the sibling relationship for the CSS selector logic to work. -->
+        <div id="gallery-{{ $gallery_counter }}" class="gallery-lightbox-full">
+          <label class="gallery-lightbox-full"
+                 for="gallery-lightbox-input-{{ $gallery_counter }}-{{ $image_counter }}"
+                 title="Close">
+            {{- partial "gallery_picture.html"
+                        (dict "class" "gallery-lightbox-full" "maxwidth" 0.9 "file" $image_url
+                              "ctx" $.Page) }}
+          </label>
+          <p class="gallery-lightbox-full">
+            <a href="{{ $image_url }}">Click to view full size image</a>
+          </p>
+        </div>
+        <figcaption>{{ with $caption }} Caption: {{ . }} {{ end}}</figcaption>
+      </figure>
+      {{ $image_counter = add $image_counter 1 }}
+      {{ $n_images = add $n_images 1 }}
+    {{ end }}
+  </div>
+
+  <!--
+    -- We reset the image counter and iterate over it again to get a matching id for the label, to
+    -- let us control the radio box defined above for the main images here with the thumbnails
+    -->
+  {{- $image_counter = $saved_counter }}
+  {{- $thumb_width := div (mod (div 100.0 (mul $n_images 10)) 10) 10.0 }}
+
+  {{- $primary_set = false }}
+  <div class="gallery-thumbnail-thumbs">
+  {{ range .Params }}
+    {{ $image_url := . }}
+    {{ $alt := "" }}
+
+    {{- if hasPrefix $image_url "#" }}
+      {{- continue }}
+    {{- else if strings.Contains $image_url "?" }}
+      {{- $url := urls.Parse $image_url }}
+      {{- if $url.Query.Has "alt" }}
+        {{- $alt = $url.Query.Get "alt" }}
+      {{- end }}
+      {{- $image_url = $url.Path }}
+    {{- end }}
+    <figure id="gallery-figure-{{ $gallery_counter }}-{{ $image_counter }}"
+            class="gallery-thumbnail-thumbimage">
+      <label for="gallery-thumbnail-input-{{ $gallery_counter }}-{{ $image_counter }}"
+             class="gallery-thumbnail-thumbimage" title="Close">
+        {{- partial "gallery_picture.html"
+                    (dict "class" "gallery-thumbnail-thumbimage" "file" $image_url "ctx" $.Page
+                          "crop" "96x96" "alt" $alt) }}
+      </label>
+    </figure>
+    {{ $image_counter = add $image_counter 1 }}
+  {{ end }}
+  </div>
 </div>
-{{- $gallery_counter = add $gallery_counter 1 }}
-{{- partial "gallery_set_counters.html"
-            (dict "ctx" $.Page "gallery_counter" $gallery_counter "gallery_image_counter" $gallery_image_counter) }}
+
+<!-- Update the image counters -->
+{{ .Page.Scratch.Set "gallery_counter" (add $gallery_counter 1) }}
+{{ .Page.Scratch.Set "image_counter"   (add $image_counter 1) }}

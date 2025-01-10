@@ -7,11 +7,18 @@
 
 {{- $alt := .alt }}
 {{- $class := .class }}
+{{- $crop := "" }}
+{{- with .crop }}
+  {{- $crop = . }}
+{{- end }}
 
 <!-- Determine maxwidth setting -->
-{{- $maxwidth := 1 }}
+{{- $maxwidth := 1.0 }}
+{{- with .maxwidth }}
+  {{- $maxwidth = . }}
+{{- end }}
 
-{{- $res := int (mul 1920 .maxwidth) }}
+{{- $res := int (mul 1920 $maxwidth) }}
 
 <picture class="{{ $class }}">
   <!-- Only try to modify local images -->
@@ -21,8 +28,12 @@
       {{- $orig := . }}
       {{- $webp := . }}
 
-      <!-- Resize and transcode if the image is wider than $res, otherwise just transcode -->
-      {{- if gt .Width $res }}
+      <!-- Crop or resize and transcode if the image is wider than
+        -- $res, otherwise just transcode -->
+      {{- if $crop }}
+        {{- $orig = .Process (printf "fill %s center" $crop) }}
+        {{- $webp = .Process (printf "fill %s center webp" $crop) }}
+      {{- else if gt .Width $res }}
         {{- $orig = .Process (printf "resize %dx" $res) }}
         {{- $webp = .Process (printf "resize %dx webp" $res) }}
       {{- else }}
@@ -30,9 +41,9 @@
       {{- end }}
 
       <source srcset="{{ $webp.RelPermalink }}" type="image/webp"/>
-      <img class="{{ $class }}" src="{{ $orig.RelPermalink }}" alt="{{ $alt }}">
+      <img class="{{ $class }}" src="{{ $orig.RelPermalink }}" alt="{{ $alt }}" loading="lazy">
     {{- end }}
   {{- else }}
-    <img class="{{ $class }}" src="{{ $url }}" alt="{{ $alt }}">
+    <img class="{{ $class }}" src="{{ $url }}" alt="{{ $alt }}" loading="lazy">
   {{- end }}
 </picture>
